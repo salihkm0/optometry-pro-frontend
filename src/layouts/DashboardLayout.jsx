@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { logout } from '../store/slices/authSlice'
 import { usePermissions } from '../utils/permissions.jsx'
@@ -22,6 +22,7 @@ const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useSelector(state => state.auth)
   const { canAccessPage, hasPermission } = usePermissions()
 
@@ -32,68 +33,82 @@ const DashboardLayout = () => {
 
   const isAdmin = user?.role === 'admin'
 
+  // Define navigation items based on user role and permissions
   const navigation = [
     { 
       name: 'Dashboard', 
       href: isAdmin ? '/admin-dashboard' : '/dashboard', 
       icon: BarChart3, 
-      permission: () => canAccessPage('dashboard') 
+      permission: () => canAccessPage('dashboard'),
+      show: true
     },
     { 
       name: 'Customers', 
       href: '/customers', 
       icon: Users, 
-      permission: () => canAccessPage('customers') 
+      permission: () => canAccessPage('customers'),
+      show: true
     },
     { 
       name: 'Records', 
       href: '/records', 
       icon: FileText, 
-      permission: () => canAccessPage('records') 
+      permission: () => canAccessPage('records'),
+      show: true
     },
     { 
       name: 'Appointments', 
       href: '/appointments', 
       icon: Calendar, 
-      permission: () => canAccessPage('appointments') 
+      permission: () => canAccessPage('appointments'),
+      show: true
     },
     // Admin-only navigation items
-    ...(isAdmin ? [
-      { 
-        name: 'Shops', 
-        href: '/admin/shops', 
-        icon: Building, 
-        permission: () => hasPermission('shops', 'view') 
-      },
-      { 
-        name: 'All Users', 
-        href: '/admin/users', 
-        icon: User, 
-        permission: () => hasPermission('users', 'manage') 
-      }
-    ] : []),
-    // Regular user navigation items
-    ...(!isAdmin ? [
-      { 
-        name: 'Users', 
-        href: '/users', 
-        icon: User, 
-        permission: () => hasPermission('users', 'view') 
-      },
-    ] : []),
+    { 
+      name: 'Shops', 
+      href: '/admin/shops', 
+      icon: Building, 
+      permission: () => isAdmin && hasPermission('shops', 'view'),
+      show: isAdmin
+    },
+    // Users navigation - different for admin vs regular users
+    { 
+      name: isAdmin ? 'All Users' : 'Users', 
+      href: isAdmin ? '/admin/users' : '/users', 
+      icon: User, 
+      permission: () => hasPermission('users', 'view'),
+      show: true
+    },
     { 
       name: 'Permissions', 
       href: '/permissions', 
       icon: Shield, 
-      permission: () => hasPermission('permissions', 'view') 
+      permission: () => hasPermission('permissions', 'view'),
+      show: true
     },
     { 
       name: 'Settings', 
       href: '/settings', 
       icon: Settings, 
-      permission: () => canAccessPage('settings') 
+      permission: () => canAccessPage('settings'),
+      show: true
     },
-  ].filter(item => item.permission())
+  ].filter(item => item.show && item.permission())
+
+  // Get current page title based on route
+  const getPageTitle = () => {
+    const path = location.pathname
+    if (path === '/dashboard') return 'Dashboard'
+    if (path === '/admin-dashboard') return 'Admin Dashboard'
+    if (path === '/customers') return 'Customers'
+    if (path === '/records') return 'Records'
+    if (path === '/users') return 'Users'
+    if (path === '/admin/users') return 'All Users'
+    if (path === '/permissions') return 'Permissions'
+    if (path === '/settings') return 'Settings'
+    if (path === '/admin/shops') return 'Shop Management'
+    return 'Dashboard'
+  }
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -152,6 +167,7 @@ const DashboardLayout = () => {
             <button
               onClick={handleLogout}
               className="flex-shrink-0 p-2 text-gray-400 hover:text-gray-500 rounded-lg"
+              title="Logout"
             >
               <LogOut className="h-5 w-5" />
             </button>
@@ -173,7 +189,7 @@ const DashboardLayout = () => {
             
             <div className="flex-1 flex justify-between items-center">
               <h1 className="text-2xl font-semibold text-gray-900">
-                {isAdmin ? 'Admin Dashboard' : 'Welcome back, ' + user?.name}
+                {getPageTitle()}
               </h1>
               <div className="flex items-center space-x-4">
                 {!isAdmin && user?.shop?.name && (

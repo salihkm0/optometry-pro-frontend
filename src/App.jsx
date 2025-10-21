@@ -15,9 +15,8 @@ import RecordDetails from './pages/RecordDetails'
 import Users from './pages/Users'
 import Permissions from './pages/Permissions'
 import Settings from './pages/Settings'
-
-// ADD THIS IMPORT
 import ShopManagement from './pages/ShopManagement'
+import AdminUsers from './pages/AdminUsers.jsx'
 
 // Loading component
 const LoadingSpinner = () => (
@@ -65,7 +64,7 @@ const PublicRoute = ({ children }) => {
   }
   
   // Redirect to appropriate dashboard based on role
-  return user?.role === 'admin' ? <Navigate to="/admin-dashboard" /> : <Navigate to="/dashboard" />
+  return user?.role === 'admin' ? <Navigate to="/admin-dashboard" replace /> : <Navigate to="/dashboard" replace />
 }
 
 function App() {
@@ -90,23 +89,28 @@ function App() {
           </PublicRoute>
         } />
 
-        {/* Protected routes */}
+        {/* Protected routes with DashboardLayout */}
         <Route path="/" element={
           <ProtectedRoute>
             <DashboardLayout />
           </ProtectedRoute>
         }>
+          {/* Default route */}
           <Route index element={
             user?.role === 'admin' 
               ? <Navigate to="/admin-dashboard" replace /> 
               : <Navigate to="/dashboard" replace />
           } />
+          
+          {/* Dashboard routes */}
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="admin-dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           
-          {/* ADD THIS ROUTE HERE */}
+          {/* Admin-only routes */}
           <Route path="admin/shops" element={<AdminRoute><ShopManagement /></AdminRoute>} />
+          <Route path="admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} /> {/* ADD THIS ROUTE */}
           
+          {/* Regular user routes */}
           <Route path="customers" element={<Customers />} />
           <Route path="customers/:id" element={<CustomerDetails />} />
           <Route path="records" element={<Records />} />
