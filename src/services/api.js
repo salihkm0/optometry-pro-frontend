@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002/api'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://optometry-pro.onrender.com'
 
 // Create axios instance
 const api = axios.create({
