@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://optometry-pro.onrender.com/api'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002/api'
 
 // Create axios instance
 const api = axios.create({
@@ -158,10 +158,6 @@ export const userService = {
   
   resetUserPassword: (id, newPassword) => 
     api.post(`/user-management/${id}/reset-password`, { newPassword }).then(res => res.data),
-  
-  // REMOVE THIS: It's already in shopService
-  // getUsersByShop: (shopId, params = {}) => 
-  //   api.get(`/shops/${shopId}/users`, { params }).then(res => res.data),
 }
 
 // Permission services
@@ -185,7 +181,6 @@ export const permissionService = {
   updateRolePermissions: (shopId, role, permissions) => 
     api.put(`/permissions/shop/${shopId}/role/${role}`, permissions).then(res => res.data),
   
-  // ADD THESE NEW METHODS:
   getShopPermissions: (shopId) => 
     api.get(`/permissions/shop/${shopId}`).then(res => res.data),
   
@@ -216,12 +211,11 @@ export const shopService = {
   updateShopStatus: (id, status) => 
     api.patch(`/shops/${id}/status`, { status }).then(res => res.data),
   
-  // FIX THIS: Use the correct endpoint for shop users
   getShopUsers: (id, params = {}) => 
     api.get(`/shops/${id}/users`, { params }).then(res => res.data),
 }
 
-// Admin services
+// Admin services - UPDATED with proper shop creation
 export const adminService = {
   getDashboardStats: () => 
     api.get('/admin/dashboard').then(res => res.data),
@@ -237,6 +231,14 @@ export const adminService = {
   
   updateShopStatus: (id, status) => 
     api.patch(`/admin/shops/${id}/status`, { status }).then(res => res.data),
+  
+  // FIX: Use the correct endpoint based on your backend
+  createShopWithOwner: (shopData) => 
+    api.post('/admin/shops', shopData).then(res => res.data),
+  
+  // ADD: Alternative method using regular shops endpoint
+  createShop: (shopData) => 
+    api.post('/shops', shopData).then(res => res.data),
 }
 
 export default api
